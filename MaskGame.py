@@ -2,71 +2,30 @@
 
 from random import randint
 
-subnetMasks = [
-				[0,0,0,0],
-				[128,0,0,0],
-				[192,0,0,0],
-				[224,0,0,0],
-				[240,0,0,0],
-				[248,0,0,0],
-				[252,0,0,0],
-				[254,0,0,0],
-				[255,0,0,0],
-				[255,128,0,0],
-				[255,192,0,0],
-				[255,224,0,0],
-				[255,240,0,0],
-				[255,248,0,0],
-				[255,252,0,0],
-				[255,254,0,0],
-				[255,255,0,0],
-				[255,255,128,0],
-				[255,255,192,0],
-				[255,255,224,0],
-				[255,255,240,0],
-				[255,255,248,0],
-				[255,255,252,0],
-				[255,255,254,0],
-				[255,255,255,0],
-				[255,255,255,128],
-				[255,255,255,192],
-				[255,255,255,224],
-				[255,255,255,240],
-				[255,255,255,248],
-				[255,255,255,252],
-				[255,255,255,254],
-			  ]
-
-def countOnes(number):
-	ones = 0
-	while number > 0:
-		if number % 2:
-			ones += 1
-		number //= 2
-	return ones
+def maskMaker(prefix):
+	mask = [0,0,0,0]
+	for i in range(len(mask)):
+		if prefix > 8:
+			mask[i] = 255
+			prefix -= 8
+			continue
+		else:
+			mask[i] = 256 - 2**(8-prefix)
+			break
+	return mask
 
 while True:
-	currentMask = subnetMasks[randint(0,31)]
-	currentCount = 0+countOnes(currentMask[0])+countOnes(currentMask[1])+countOnes(currentMask[2])+countOnes(currentMask[3])
+	roundMask = maskMaker(randint(0,32))
 	
-	print(
-		"\n"+
-		"\n"+
-		"\n"+
-		"\n"+
-		"\n"+
-		str(currentMask[0])+"."+str(currentMask[1])+"."+str(currentMask[2])+"."+str(currentMask[3])
-		)
-	
+	print("\n"*50)
+	print('{}.{}.{}.{}'.format(roundMask[0],roundMask[1],roundMask[2],roundMask[3],))
+	print('')
+
 	answer = input("CIDR Prefix? ")
 	
-	if answer == str(currentCount):
-		print(
-			"\n"+
-			str(answer)+" is "+"Right! :)"
-			)
+	if answer == str(roundPrefix):
+		print()
+		input('Righto! :)')
 	else:
-		print(
-			"\n"+
-			str(answer)+" is "+"Wrong :("
-			)
+		print()
+		input('Sorry! Try again :(')
