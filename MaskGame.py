@@ -1,78 +1,116 @@
 #!/usr/bin/python3
 
-from random import randint
+import random
 
-def maskMaker(prefix):
+want_to_play = True
+
+m_possibilities = []
+p_possibilities = []
+
+# This will turn a numeric prefix into a nicely formatted dotted decimal mask.
+def mask_maker(prefix):
 	mask = [0,0,0,0]
-	for i in range(len(mask)):
-		# We have to separate the prefix into octets
+	for i in range(4):
 		if prefix > 8:
 			mask[i] = 255
 			prefix -= 8
 		else:
 			mask[i] = 256 - 2**(8-prefix)
 			break
-	return mask
+	return '{}.{}.{}.{}'.format(mask[0],mask[1],mask[2],mask[3])
 
+while want_to_play:
 
-mode = 0
-
-while not mode:
-	print('Select one of the following options:')
-	print('')
-	print('m - Mask (you will be prompted for a prefix)')
-	print('p - Prefix (you will be prompted for a mask)')
-	print('r - Random')
-	print('')
-	print('You can enter \'q\' at any time to quit')
-	
-	modeAnswer = input('')
-	
-	if modeAnswer == 'q' or modeAnswer == 'Q':
-		break
-	elif modeAnswer == 'm' or modeAnswer == 'M':
-		mode = 1
-	elif modeAnswer == 'p' or modeAnswer == 'P':
-		mode = 2
-	elif modeAnswer == 'r' or modeAnswer == 'R':
-		mode = 3
-
-while mode:
-	prefix = randint(0,32)
-
-	maskList = maskMaker(prefix)
-
-	maskString = '{}.{}.{}.{}'.format(maskList[0],maskList[1],maskList[2],maskList[3],)
-
-	if mode == 3:
-		roundMode = randint(1,2)
-	else:
-		roundMode = mode
-
-	if roundMode == 2:
-		question = '/' + str(prefix)
-		questionPrompt = 'Subnet mask: '
-		answer = maskString
-	else:
-		question = maskString
-		questionPrompt = 'CIDR prefix: '
-		answer = str(prefix)
-
-	print("\n"*50)
-	print(question)
-	print('')
-
-	response = input(questionPrompt)
-	# Check response for 'q'
-	if response == 'q' or response == 'Q':
-		break
-
-	if response == answer:
+	# I guess you could consider this the "menu screen". Should show up at the very beginning and
+	# again once there are no "possibilities" left (once the game is over).
+	while not m_possibilities and not p_possibilities:
+		print("\n"*50)
+		print('Please select one of the following options:')
 		print('')
-		response = input('Righto! :) ')
-	else:
+		print('m - Mask (you will be prompted for a prefix)')
+		print('p - Prefix (you will be prompted for a mask)')
+		print('r - Random')
 		print('')
-		response = input('Sorry! Try again :( ')
-	# Check if q was entered after the question was answered
-	if response == 'q' or response == 'Q':
-		break
+		print('You can enter \'q\' at any time to quit')	
+		modeAnswer = input('')
+		if modeAnswer == 'q' or modeAnswer == 'Q':
+			want_to_play = False
+			break
+		elif modeAnswer == 'm' or modeAnswer == 'M':
+			m_possibilities = list(range(0,33))
+		elif modeAnswer == 'p' or modeAnswer == 'P':
+			p_possibilities = list(range(0,33))
+		elif modeAnswer == 'r' or modeAnswer == 'R':
+			m_possibilities = list(range(0,33))
+			p_possibilities = list(range(0,33))
+	
+	# This is for keeping score
+	max_score = len(m_possibilities)+len(p_possibilities)
+	score = 0
+
+	# This is the main game loop.
+	while m_possibilities or p_possibilities:
+
+		# We wanna select the right mode bassed on the pressence of one or both of those lists up
+		# there, and if the mode is 'r' (both lists are not empty) we wanna only use one at a time.
+		if m_possibilities and p_possibilities:
+			mode_mask = bool(random.choice([True,False]))
+		elif m_possibilities:
+			mode_mask = True
+		else:
+			mode_mask = False
+
+		# This will determine the right question and answer based on the current game mode
+		if mode_mask:
+			print('MASK MODE!')
+			round_prefix = random.choice(m_possibilities)
+			m_possibilities.remove(round_prefix)
+
+			question = mask_maker(round_prefix)
+			questionPrompt = 'CIDR prefix: '
+			answer = str(round_prefix)
+		else:
+			print('PREFIX MODE!')
+			round_prefix = random.choice(p_possibilities)
+			p_possibilities.remove(round_prefix)
+			
+			question = '/' + str(round_prefix)
+			questionPrompt = 'Subnet mask: '
+			answer = mask_maker(round_prefix)
+
+		# Just make some room and print out the question.
+		print("\n"*50)
+		print('')
+		print(str(len(m_possibilities)+len(p_possibilities))+' questions remaining')
+		print('')
+		print(question)
+		print('')
+		
+		# The following input and control flow is pretty much the heart of the game.
+		response = input(questionPrompt)
+		
+		# Check for 'q' to see if the player no longer wants to play.
+		if response == 'q' or response == 'Q':
+			want_to_play = False
+			break
+
+		# You're either right or you're wrong! Or are you..? No time for philosophy!
+		if response == answer:
+			score += 1
+			print('')
+			response = input('Righto! :) ')
+		else:
+			print('')
+			response = input('Sorry! Try again :( ')
+
+		# Check for 'q' one more time before the next round.
+		if response == 'q' or response == 'Q':
+			want_to_play = False
+			break
+
+	# Tell player final score before starting new game or quiting.
+	if want_to_play:
+		print("\n"*50)
+		print('Score: {}/{}'.format(score,max_score))
+		print('')
+		input('Hit \'Enter\' to continue')
