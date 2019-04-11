@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import random
 
 want_to_play = True
@@ -25,14 +26,14 @@ while want_to_play:
     # the very beginning and again once there are no "possibilities" left
     # (once the game is over).
     while not m_possibilities and not p_possibilities:
-        print("\n" * 50)
-        print('Please select one of the following options:')
-        print('')
-        print('m - Mask (you will be prompted for a prefix)')
-        print('p - Prefix (you will be prompted for a mask)')
-        print('r - Random')
-        print('')
-        print('You can enter \'q\' at any time to quit')
+        os.system('clear')
+        print('Please select one of the following options:\n'
+              '\n'
+              'm - Mask (you will be prompted for a prefix)\n'
+              'p - Prefix (you will be prompted for a mask)\n'
+              'r - Random\n'
+              '\n'
+              'You can enter \'q\' at any time to quit\n')
         modeAnswer = input('')
         if modeAnswer == 'q' or modeAnswer == 'Q':
             want_to_play = False
@@ -65,7 +66,7 @@ while want_to_play:
         # This will determine the right question and answer based on the
         # current game mode
         if mode_mask:
-            print('MASK MODE!')
+            print('Mask mode!')
             round_prefix = random.choice(m_possibilities)
             m_possibilities.remove(round_prefix)
 
@@ -73,7 +74,7 @@ while want_to_play:
             questionPrompt = 'CIDR prefix: '
             answer = str(round_prefix)
         else:
-            print('PREFIX MODE!')
+            print('Prefix mode!')
             round_prefix = random.choice(p_possibilities)
             p_possibilities.remove(round_prefix)
             question = '/' + str(round_prefix)
@@ -81,7 +82,7 @@ while want_to_play:
             answer = mask_maker(round_prefix)
 
         # Just make some room and print out the question.
-        print("\n" * 50)
+        os.system('clear')
         print('')
         print(str(len(m_possibilities) + len(p_possibilities)) +
               ' questions remaining')
@@ -115,7 +116,7 @@ while want_to_play:
 
     # Tell player final score before starting new game or quiting.
     if want_to_play:
-        print("\n" * 50)
+        os.system('clear')
         print('Score: {}/{}'.format(score, max_score))
         print('')
-        input('Hit \'Enter\' to continue')
+        input('Hit \'Enter\' to continue (or just press it gently)')
