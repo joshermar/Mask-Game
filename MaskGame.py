@@ -104,10 +104,10 @@ while want_to_play:
         if response == answer:
             score += 1
             print('')
-            response = input('Righto! :) ')
+            response = input('That is correct!')
         else:
             print('')
-            response = input('Sorry! Try again :( ')
+            response = input('Sorry! Try again')
 
         # Check for 'q' one more time before the next round.
         if response == 'q' or response == 'Q':
