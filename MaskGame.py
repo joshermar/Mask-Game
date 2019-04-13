@@ -120,3 +120,4 @@ while want_to_play:
         print('Score: {}/{}'.format(score, max_score))
         print('')
         input('Hit \'Enter\' to continue (or just press it gently)')
+os.system('clear')
