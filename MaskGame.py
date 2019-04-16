@@ -3,121 +3,119 @@
 import os
 import random
 
+# This must be keept track of in order to allow the user to exit.
 want_to_play = True
-m_possibilities = []
-p_possibilities = []
+
+# The lists serve as a way to keep track of remaining questions,
+# while also being useful in determining when the game has ended.
+m_list = []
+p_list = []
 
 
-# This will turn a numeric prefix into a nicely formatted dotted decimal mask.
+# This function returns a nicely formatted dotted decimal mask
 def mask_maker(prefix):
-    mask = [0, 0, 0, 0]
+    mask = []
     for i in range(4):
-        if prefix > 8:
-            mask[i] = 255
-            prefix -= 8
-        else:
-            mask[i] = 256 - 2 ** (8 - prefix)
-            break
-    return '{}.{}.{}.{}'.format(mask[0], mask[1], mask[2], mask[3])
+        # Bit of a mouthfull. I wanted to practice using ternary operators.
+        mask.append(256 - (2 ** (8 - prefix)) if prefix < 8 else 255)
+        prefix -= prefix if prefix < 8 else 8
+    return '{}.{}.{}.{}'.format(*mask)
 
 
 while want_to_play:
-    # I guess you could consider this the "menu screen". Should show up at
-    # the very beginning and again once there are no "possibilities" left
-    # (once the game is over).
-    while not m_possibilities and not p_possibilities:
+    # This is the menu screen that appears once the game is started
+    # and/or once the lists are empty (once the game is over).
+    while not m_list and not p_list and want_to_play:
         os.system('clear')
-        print('Please select one of the following options:\n'
-              '\n'
-              'm - Mask (you will be prompted for a prefix)\n'
-              'p - Prefix (you will be prompted for a mask)\n'
-              'r - Random\n'
-              '\n'
-              'You can enter \'q\' at any time to quit\n')
-        modeAnswer = input('')
-        if modeAnswer == 'q' or modeAnswer == 'Q':
+        print(
+            'Select one of the following options:\n'
+            '\n'
+            'm - Mask (you will be prompted for a prefix)\n'
+            'p - Prefix (you will be prompted for a mask)\n'
+            'r - Random\n'
+            '\n'
+            'You can enter \'q\' at any time to quit\n'
+        )
+        modeAnswer = input('Game mode: ')
+        if modeAnswer in ('q', 'Q'):
             want_to_play = False
-            break
-        elif modeAnswer == 'm' or modeAnswer == 'M':
-            m_possibilities = list(range(0, 33))
-        elif modeAnswer == 'p' or modeAnswer == 'P':
-            p_possibilities = list(range(0, 33))
-        elif modeAnswer == 'r' or modeAnswer == 'R':
-            m_possibilities = list(range(0, 33))
-            p_possibilities = list(range(0, 33))
+        elif modeAnswer in ('m', 'M'):
+            m_list = list(range(0, 33))
+        elif modeAnswer in ('p', 'P'):
+            p_list = list(range(0, 33))
+        elif modeAnswer in ('r', 'R'):
+            m_list = list(range(0, 33))
+            p_list = list(range(0, 33))
 
-    # This is for keeping score
-    max_score = len(m_possibilities) + len(p_possibilities)
+    # Max score is determined by game mode. Check if m_list AND p_list
+    # are both NOT empty.
+    if p_list and m_list:
+        max_score = 66
+    else:
+        max_score = 33
+    # The initial score. Gotta start somewhere :D
     score = 0
 
-    # This is the main game loop.
-    while m_possibilities or p_possibilities:
+    # This is the "round" loop.
+    while m_list or p_list:
 
-        # We wanna select the right mode bassed on the pressence of one or
-        # both of those lists up there, and if the mode is 'r' (meaning both
-        # lists are not empty) we want to only use one at a time.
-        if m_possibilities and p_possibilities:
-            mode_mask = bool(random.choice([True, False]))
-        elif m_possibilities:
-            mode_mask = True
+        # The mode must be determined on a per-round basis in order to provide
+        # the functionality of 'r' mode (randomly selects a mode each time).
+        if m_list and p_list:
+            mode_mask = random.choice((True, False))
         else:
-            mode_mask = False
+            mode_mask = bool(m_list)
 
-        # This will determine the right question and answer based on the
-        # current game mode
+        # Based on the mode, select a prefix for the round and then
+        # remove it from the list.
         if mode_mask:
-            print('Mask mode!')
-            round_prefix = random.choice(m_possibilities)
-            m_possibilities.remove(round_prefix)
-
+            round_prefix = random.choice(m_list)
+            m_list.remove(round_prefix)
+            # The question and answer must be formatted accordingly
             question = mask_maker(round_prefix)
-            questionPrompt = 'CIDR prefix: '
-            answer = str(round_prefix)
+            prompt = 'CIDR prefix: '
+            correct_answer = str(round_prefix)
         else:
-            print('Prefix mode!')
-            round_prefix = random.choice(p_possibilities)
-            p_possibilities.remove(round_prefix)
-            question = '/' + str(round_prefix)
-            questionPrompt = 'Subnet mask: '
-            answer = mask_maker(round_prefix)
+            round_prefix = random.choice(p_list)
+            p_list.remove(round_prefix)
+            # The mode is prefix for this round
+            question = f'/{round_prefix}'
+            prompt = 'Subnet mask: '
+            correct_answer = mask_maker(round_prefix)
 
-        # Just make some room and print out the question.
+        # Clear the screen and prompt with question.
         os.system('clear')
-        print('')
-        print(str(len(m_possibilities) + len(p_possibilities)) +
-              ' questions remaining')
-        print('')
-        print(question)
-        print('')
+        print(
+            '\n'
+            f'{len(m_list) + len(p_list)} questions remaining\n'
+            '\n'
+            f'{question}\n'
+        )
 
-        # The following input and control flow is pretty much the heart
-        # of the game.
-        response = input(questionPrompt)
+        response = input(prompt)
 
-        # Check for 'q' to see if the player no longer wants to play.
-        if response == 'q' or response == 'Q':
+        # Check to see if the player no longer wants to play.
+        if response in ('q', 'Q'):
             want_to_play = False
             break
 
         # You're either right or you're wrong. Or are you!? No time for
         # philosophy...
-        if response == answer:
+        if response == correct_answer:
             score += 1
-            print('')
-            response = input('That is correct!')
+            response = input('\nThat is correct!')
         else:
-            print('')
-            response = input('Sorry! Try again')
+            response = input('\nSorry! Try again')
 
-        # Check for 'q' one more time before the next round.
-        if response == 'q' or response == 'Q':
+        # Check for 'q'/'Q' one more time before the next round.
+        if response in ('q', 'Q'):
             want_to_play = False
             break
 
-    # Tell player final score before starting new game or quiting.
+    # Tell player the final score (unless 'q'/'Q' was pressed).
     if want_to_play:
         os.system('clear')
-        print('Score: {}/{}'.format(score, max_score))
-        print('')
-        input('Hit \'Enter\' to continue (or just press it gently)')
+        print(f'Score: {score}/{max_score}\n')
+        input("Hit 'Enter' to continue (or just press it gently)")
+
 os.system('clear')
