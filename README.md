@@ -1,5 +1,5 @@
 # Mask-Game
-A text-based game I made to practice subnetting for the CCNA exam (This is also my foray into Git).
+A text-based game written in Python that I made to practice subnetting for the CCNA exam.
 
 The game basically has three modes:
 1. Mask (dotted-decimal to slash)
