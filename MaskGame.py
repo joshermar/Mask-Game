@@ -3,20 +3,16 @@
 import os
 import random
 
-# This must be keept track of in order to allow the user to exit.
 want_to_play = True
 
-# The lists serve as a way to keep track of remaining questions,
-# while also being useful in determining when the game has ended.
+# Keeps track of remaining questions. Also determines whether the game has ended.
 m_list = []
 p_list = []
 
-
-# This function returns a nicely formatted dotted decimal mask
+# Returns a nicely formatted dotted decimal mask
 def mask_maker(prefix):
     mask = []
     for i in range(4):
-        # Bit of a mouthfull. I wanted to practice using ternary operators.
         mask.append(256 - (2 ** (8 - prefix)) if prefix < 8 else 255)
         prefix -= prefix if prefix < 8 else 8
     return '{}.{}.{}.{}'.format(*mask)
@@ -24,8 +20,8 @@ def mask_maker(prefix):
 
 while want_to_play:
     try:
-        # This is the menu screen that appears once the game is started
-        # and/or once the lists are empty (once the game is over).
+        # Mnu screen that appears once the game is started
+        # and/or once the lists are empty (game is over).
         while not m_list and not p_list and want_to_play:
             os.system('clear')
             print(
@@ -50,14 +46,16 @@ while want_to_play:
 
         # Max score is determined by game mode. Check if m_list AND p_list
         # are both NOT empty.
+        #
+        # TODO: Replace magic numbers
         if p_list and m_list:
             max_score = 66
         else:
             max_score = 33
-        # The initial score. Gotta start somewhere :D
+        # Initial score
         score = 0
 
-        # This is the "round" loop.
+        # Game round loop
         while m_list or p_list:
 
             # The mode must be determined on a per-round basis to provide
@@ -100,8 +98,6 @@ while want_to_play:
                 want_to_play = False
                 break
 
-            # You're either right or you're wrong. Or are you!? No time for
-            # philosophy...
             if response == correct_answer:
                 score += 1
                 response = input('\nThat is correct!')
